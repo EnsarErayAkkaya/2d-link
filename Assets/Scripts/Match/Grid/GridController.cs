@@ -38,9 +38,9 @@ namespace Match.Grid
 
         public void Init()
         {
-            PoolService.Instance.InitializePool(gridItemRemoveParticle.gameObject, 15, 10);
+            //PoolService.Instance.InitializePool(gridItemRemoveParticle.gameObject, 15, 10);
 
-            levelData = (MatchLevelData)null;// ResolveServices.LevelService.ActiveLevelConfig.GetLevelData();
+            levelData = MatchGameService.MatchLevelData;
 
             GenerateGrid();
 
@@ -263,17 +263,13 @@ namespace Match.Grid
             // decide which items to generate
             foreach (var dropData in columnDropDatas)
             {
-                ColumnDroppableTypes droppableTypes = levelData.columnDroppableTypes.FirstOrDefault(s => s.columnIndex == dropData.Key);
-
                 columnDropConfig.Add(dropData.Key, new Queue<BaseMatchItemConfig>());
 
                 if (dropData.Value.emptyCellCount > 0)
                 {
                     for (int i = 0; i < dropData.Value.emptyCellCount; i++)
                     {
-                        BaseMatchItemConfig config = droppableTypes != null ?
-                            MatchGameService.Instance.GetMatchItemConfig(droppableTypes.possibeTypes.GetRandomElement().item) :
-                            MatchGameService.Instance.GetRandomMatchItemConfig();
+                        BaseMatchItemConfig config = MatchGameService.Instance.GetRandomMatchItemConfig();
 
                         columnDropConfig[dropData.Key].Enqueue(config);
                     }
@@ -408,7 +404,7 @@ namespace Match.Grid
 
         public void DamageGridItem(Vector3Int coord, string damageId, bool playParticle = true)
         {
-            if (GridItems.TryGetValue(coord, out BaseGridItem item))
+            if (TryGetGridItem(coord, out BaseGridItem item))
             {
                 //MatchGameService.AnimationController.PlayCollectAnimation(GridItems[coord]);
                 RemoveGridItem(coord, playParticle);
@@ -418,7 +414,7 @@ namespace Match.Grid
 
         public void RemoveGridItem(Vector3Int coord, bool playParticle = true)
         {
-            if (GridItems.TryGetValue(coord, out BaseGridItem item))
+            if (TryGetGridItem(coord, out BaseGridItem item))
             {
                 PoolService.Instance.Despawn(item);
                 gridItems.Remove(coord);
@@ -454,6 +450,20 @@ namespace Match.Grid
             }
 
             return false;
+        }
+
+        public bool TryGetGridItem(Vector3Int coord, out BaseGridItem gridItem)
+        {
+            coord.z = 0; // ensure z is zero for 2D grid
+            if (gridItems.TryGetValue(coord, out gridItem))
+            {
+                return true;
+            }
+            else
+            {
+                gridItem = null;
+                return false;
+            }
         }
     }
 }

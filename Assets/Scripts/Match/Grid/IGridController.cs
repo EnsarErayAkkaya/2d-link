@@ -8,24 +8,26 @@ namespace Match.Grid
 {
     public interface IGridController
     {
-        public Dictionary<Vector3Int, BaseGridItem> GridItems { get; }
-        public Dictionary<Vector3Int, bool> GridShape { get; }
-        public Vector2 CellSize { get; }
+        Dictionary<Vector3Int, BaseGridItem> GridItems { get; }
+        Dictionary<Vector3Int, bool> GridShape { get; }
+        Vector2 CellSize { get; }
 
-        public UnityEngine.Grid Grid { get; }
+        UnityEngine.Grid Grid { get; }
 
-        public void SwapItems(Vector3Int startCoordinate, Vector3Int swipeCoordinate);
+        void SwapItems(Vector3Int startCoordinate, Vector3Int swipeCoordinate);
 
-        public void GenerateGrid();
+        void GenerateGrid();
 
-        public void RequestGridCalculation();
+        void RequestGridCalculation();
 
-        public void DamageGridItem(Vector3Int coord, string damageId, bool playParticle = true);
+        void DamageGridItem(Vector3Int coord, string damageId, bool playParticle = true);
 
-        public void RemoveGridItem(Vector3Int coord, bool playParticle = true);
+        void RemoveGridItem(Vector3Int coord, bool playParticle = true);
 
-        public void SetUpGridItem(BaseGridItem item);
+        void SetUpGridItem(BaseGridItem item);
 
-        public bool IsBottom(Vector3Int coord);
+        bool IsBottom(Vector3Int coord);
+
+        bool TryGetGridItem(Vector3Int coord, out BaseGridItem gridItem);
     }
 }

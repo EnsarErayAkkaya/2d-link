@@ -12,6 +12,13 @@ namespace Match
             new Vector3Int(0, -1)
         };
 
+        public static readonly Vector3Int[] CellDiagonalNeighbours = {
+            new Vector3Int(1, 1),
+            new Vector3Int(-1, -1),
+            new Vector3Int(1, -1),
+            new Vector3Int(-1, 1)
+        };
+
         public static string[] GetAllMatchItemNames()
         {
             string[] result = new string[BaseMatchItemNames.Length + 1];

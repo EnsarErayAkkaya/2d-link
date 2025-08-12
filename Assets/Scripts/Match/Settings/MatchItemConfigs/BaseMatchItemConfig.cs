@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Match.Settings
 {
-    [CreateAssetMenu(fileName = "BaseMatchItemConfig", menuName = "Game/Match/Items/Base Match Item Config", order = 0)]
+    [CreateAssetMenu(fileName = "BaseMatchItemConfig", menuName = "Match/Items/Base Match Item Config", order = 0)]
     public class BaseMatchItemConfig : ScriptableObject
     {
         [Dropdown("GetMatchItemNames")]

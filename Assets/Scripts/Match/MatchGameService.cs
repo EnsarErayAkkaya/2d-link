@@ -13,6 +13,7 @@ namespace Match
     {
         [SerializeField] private MatchGameSettings matchGameSettings;
         [SerializeField] private GridController gridController;
+        [SerializeField] private MatchLevelData matchLevelData;
 
         #region SERVICES & CONTROLLERS
         private MoveController moveController = new MoveController();
@@ -20,7 +21,6 @@ namespace Match
 
         private static MatchGameService instance;
         private Dictionary<BaseMatchItemConfig, int> matchItemCollectedCounts = new();
-        private MatchLevelData matchLevelData;
 
         #region INTERNAL GETTERS
         internal static MatchLevelData MatchLevelData => instance.matchLevelData;
@@ -43,10 +43,13 @@ namespace Match
             instance = this;
         }
 
-        public async void Setup(MatchLevelData matchLevelData)
+        private void Start()
         {
-            this.matchLevelData = matchLevelData;
+            Setup();
+        }
 
+        public async void Setup()
+        {
             moveController.Init();
 
             await UniTask.DelayFrame(1);

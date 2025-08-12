@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Match.Settings
 {
-    [CreateAssetMenu(fileName = "MatchGameSettings", menuName = "Game/Match/Match Game Settings", order = 0)]
+    [CreateAssetMenu(fileName = "MatchGameSettings", menuName = "Match/Match Game Settings", order = 0)]
     public class MatchGameSettings : ScriptableObject
     {
         [BoxGroup("Base Match Item Configs")]

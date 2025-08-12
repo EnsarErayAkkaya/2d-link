@@ -50,7 +50,7 @@ namespace BaseServices.InputServices
                 // if finger moved since start
                 if (finger.SwipeScaledDelta.sqrMagnitude > 0.25f)
                 {
-                    OnInputReceived?.Invoke(InputType.Drag, new List<Vector3>() { (Vector3)finger.ScreenPosition, (Vector3)finger.StartScreenPosition });
+                    OnInputReceived?.Invoke(InputType.Drag, new List<Vector3>() { (Vector3)finger.StartScreenPosition, (Vector3)finger.ScreenPosition });
                 }
             }
         }
