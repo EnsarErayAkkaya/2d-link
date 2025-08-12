@@ -26,8 +26,9 @@ namespace Match
         {
             if (!canInteract) return;
 
+            int moveCount = 0;//((MatchLevelConfig)ResolveServices.LevelService.ActiveLevelConfig).matchLevelData.moveCount;
             // all moves used
-            if (((MatchLevelConfig)ResolveServices.LevelService.ActiveLevelConfig).matchLevelData.moveCount < 1) return;
+            if (moveCount < 1) return;
 
             if (inputType == InputType.Swipe)
             {

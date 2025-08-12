@@ -12,9 +12,6 @@ namespace Match.Grid
         public Dictionary<Vector3Int, bool> GridShape { get; }
         public Vector2 CellSize { get; }
 
-        public ObstacleController ObstacleController { get; }
-        public BoosterController BoosterController { get; }
-
         public UnityEngine.Grid Grid { get; }
 
         public void SwapItems(Vector3Int startCoordinate, Vector3Int swipeCoordinate);

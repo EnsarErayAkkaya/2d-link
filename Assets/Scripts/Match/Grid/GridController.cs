@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System.Threading.Tasks;
+using BaseServices.Utilities;
 
 namespace Match.Grid
 {
@@ -20,24 +20,18 @@ namespace Match.Grid
     public class GridController : MonoBehaviour, IGridController
     {
         [SerializeField] private UnityEngine.Grid grid;
-        [SerializeField] private PoolableParticle gridItemRemoveParticle;
+        [SerializeField] private ParticleSystem gridItemRemoveParticle;
 
         private Dictionary<Vector3Int, BaseGridItem> gridItems = new();
         private Dictionary<Vector3Int, bool> gridShape = new();
-        
-        private BoosterController boosterController = new BoosterController();
-        private ObstacleController obstacleController = new ObstacleController();
-        private MatchLevelData levelData;
-        private List<MergeData> lastMergeData = null;
 
+        private MatchLevelData levelData;
 
         #region PUBLIC_GETTERS
         public Dictionary<Vector3Int, BaseGridItem> GridItems => gridItems;
         public Dictionary<Vector3Int, bool> GridShape => gridShape;
         public Vector2 CellSize => grid.cellSize;
 
-        public ObstacleController ObstacleController => obstacleController;
-        public BoosterController BoosterController => boosterController;
         public UnityEngine.Grid Grid => grid;
 
         #endregion
@@ -46,7 +40,7 @@ namespace Match.Grid
         {
             PoolService.Instance.InitializePool(gridItemRemoveParticle.gameObject, 15, 10);
 
-            levelData = (MatchLevelData)ResolveServices.LevelService.ActiveLevelConfig.GetLevelData();
+            levelData = (MatchLevelData)null;// ResolveServices.LevelService.ActiveLevelConfig.GetLevelData();
 
             GenerateGrid();
 
@@ -62,56 +56,10 @@ namespace Match.Grid
             Vector3Int swipeCoordinate = startCoordinate + direction;
 
             // if grid item exist and swipe direction item exist
-            if (gridItems.ContainsKey(startCoordinate) && gridItems.ContainsKey(swipeCoordinate) && 
+            if (gridItems.ContainsKey(startCoordinate) && gridItems.ContainsKey(swipeCoordinate) &&
                 gridItems[startCoordinate].MatchItemData.canMove && gridItems[swipeCoordinate].MatchItemData.canMove)
             {
-                BoosterSwipeResult boosterSwipeResult = boosterController.OnBoosterSwipe(gridItems[startCoordinate], gridItems[swipeCoordinate], swipeCoordinate);
-
-                // is this a booster swipe, it it is swipe
-                if (boosterSwipeResult != BoosterSwipeResult.NoBooster)
-                {
-                    if (boosterSwipeResult == BoosterSwipeResult.BoosterActivated)
-                    {
-                        // set last Interacted times
-                        gridItems[startCoordinate].LastInteractedTime = Time.time;
-                        gridItems[startCoordinate].LastUserInputDirection = -direction;
-
-                        gridItems[swipeCoordinate].LastInteractedTime = Time.time;
-                        gridItems[swipeCoordinate].LastUserInputDirection = direction;
-
-                        SwapItems(startCoordinate, swipeCoordinate);
-                        MatchGameService.AnimationController
-                            .PlaySuccessfulMoveAnimaton(gridItems[startCoordinate].transform, gridItems[swipeCoordinate].transform)
-                            .AppendCallback(() =>
-                            {
-                                gridItems[startCoordinate].OnUpdatePositionAnimationCompleted();
-                                gridItems[swipeCoordinate].OnUpdatePositionAnimationCompleted();
-
-                                RequestGridCalculation();
-                            });
-                    }
-                    else
-                    {
-                        // set last Interacted times
-                        gridItems[startCoordinate].LastInteractedTime = Time.time;
-                        gridItems[startCoordinate].LastUserInputDirection = -direction;
-
-                        Sequence mergeBoosterSeq = boosterController.MergeBoosters(
-                            (BoosterItem)gridItems[startCoordinate], 
-                            (BoosterItem)gridItems[swipeCoordinate], swipeCoordinate);
-
-                        if (mergeBoosterSeq != null)
-                        {
-                            mergeBoosterSeq.AppendCallback(() => RequestGridCalculation());
-                        }
-                        else
-                        {
-                            RequestGridCalculation();
-                        }
-                    }
-                }
-                else if (MatchGameService.MergeCalculator.CalculateCoordinateMergeWithConfig(startCoordinate, gridItems[swipeCoordinate].MatchItemConfig, direction) != null ||
-                    MatchGameService.MergeCalculator.CalculateCoordinateMergeWithConfig(swipeCoordinate, gridItems[startCoordinate].MatchItemConfig, -direction) != null)
+                if (true)// valid link
                 {
                     // this is a valid swipe, play successful move animation
 
@@ -123,24 +71,24 @@ namespace Match.Grid
                     gridItems[swipeCoordinate].LastUserInputDirection = direction;
 
                     SwapItems(startCoordinate, swipeCoordinate);
-                    MatchGameService.AnimationController
+                    /*MatchGameService.AnimationController
                         .PlaySuccessfulMoveAnimaton(gridItems[startCoordinate].transform, gridItems[swipeCoordinate].transform).AppendCallback(() =>
                         {
                             gridItems[startCoordinate].OnUpdatePositionAnimationCompleted();
                             gridItems[swipeCoordinate].OnUpdatePositionAnimationCompleted();
 
                             RequestGridCalculation();
-                        });
+                        });*/
                 }
-                else
+                else // failed link
                 {
                     // not a valid swipe, play failed move animation
-                    MatchGameService.AnimationController
+                    /*MatchGameService.AnimationController
                         .PlayFailedMoveAnimaton(gridItems[startCoordinate].transform, gridItems[swipeCoordinate].transform).OnComplete(() =>
                         {
                             MatchGameService.MoveController.SetCanInteract(true);
                         })
-                        .Play();
+                        .Play();*/
                 }
             }
             else
@@ -168,7 +116,7 @@ namespace Match.Grid
                 for (int i = 0; i < levelData.levelStartingItems[j].row.Count; i++) // column
                 {
                     Vector3Int coordinate = new Vector3Int(i, j);
-                    
+
                     if (levelData.levelGridSetup[j].row[i])
                     {
                         string itemKey = levelData.levelStartingItems[j].row[i].item;
@@ -195,29 +143,6 @@ namespace Match.Grid
 
         private async void CalculateGrid()
         {
-            // MERGE & ANIMATE
-            List<UniTask> mergeSequences = MergeWithAnimations();
-
-            bool hasAnyActivatedBooster = boosterController.HasAnyActivatedBooster();
-
-            if (hasAnyActivatedBooster)
-            {
-                while (hasAnyActivatedBooster)
-                {
-                    mergeSequences.AddRange(boosterController.ProcessBoosters(boosterController.GetAllActiveBoosterPriorities()[0]));
-
-                    await UniTask.WhenAll(mergeSequences);
-
-                    mergeSequences.Clear();
-
-                    hasAnyActivatedBooster = boosterController.HasAnyActivatedBooster();
-                }
-            }
-            else
-            {
-                await UniTask.WhenAll(mergeSequences);
-            }
-
             // DROP & CREATE NEW
             bool needDropIteration = true;
 
@@ -245,19 +170,6 @@ namespace Match.Grid
                         needDropIteration = true;
                     }
                 }
-            }
-
-            // Calculate Grid again if has anything to merge
-            if (HasAnythingToMerge() || boosterController.HasAnyActivatedBooster())
-            {
-                await UniTask.NextFrame();
-
-                RequestGridCalculation();
-            }
-            else
-            {
-                MatchGameService.MoveController.SetCanInteract(true);
-                lastMergeData = null;
             }
         }
 
@@ -310,10 +222,10 @@ namespace Match.Grid
 
                                 gridItem.UpdateGridCoordinate(dropCoord);
                                 var seq = gridItem.UpdatePosition(grid.GetCellCenterLocal(dropCoord), droppedItemCount);
-                                
+
                                 if (seq != null)
                                 {
-                                    dropSequences.Add(seq.Play().ToUnitask());
+                                    dropSequences.Add(seq.Play().AsyncWaitForCompletion().AsUniTask());
                                 }
 
                                 ++droppedItemCount;
@@ -335,7 +247,7 @@ namespace Match.Grid
                     }
                 }
 
-                columnsDropData.Add(i, new ColumnDropData() {emptyCellCount = emptyCellCount, dropppedItemCount = droppedItemCount });
+                columnsDropData.Add(i, new ColumnDropData() { emptyCellCount = emptyCellCount, dropppedItemCount = droppedItemCount });
                 //dropSequences.AddRange(GenerateColumnItems(i, emptyCellCount, droppedItemCount));
             }
 
@@ -401,7 +313,7 @@ namespace Match.Grid
 
                 if (seq != null)
                 {
-                    dropSequences.Add(seq.Play().ToUniTask());
+                    dropSequences.Add(seq.Play().AsyncWaitForCompletion().AsUniTask());
                 }
 
                 gridItems.Add(item.GridCoordinate, item);
@@ -414,7 +326,7 @@ namespace Match.Grid
 
         private BaseGridItem CreateGridItem(BaseMatchItemConfig config, Vector3Int coordinate)
         {
-            BaseGridItem item = (BaseGridItem)PoolService.Instance.Spawn(config.prefab);
+            BaseGridItem item = PoolService.Instance.Spawn(config.prefab);
             item.Init(coordinate);
             return item;
         }
@@ -477,7 +389,7 @@ namespace Match.Grid
 
                             if (seq != null)
                             {
-                                dropSequences.Add(seq.Play().ToUniTask());
+                                dropSequences.Add(seq.Play().AsyncWaitForCompletion().AsUniTask());
                             }
 
                             break;
@@ -489,86 +401,6 @@ namespace Match.Grid
             return dropSequences;
         }
 
-        private List<UniTask> MergeWithAnimations()
-        {
-            if (lastMergeData == null)
-            {
-                lastMergeData = MatchGameService.MergeCalculator.CalculateMergeableItems();
-            }
-
-            List<UniTask> mergeSequences = new List<UniTask>();
-
-            // for each merge datas
-            for (int mergeIndex = 0; mergeIndex < lastMergeData.Count; mergeIndex++)
-            {
-                string damageId = Guid.NewGuid().ToString();
-
-                MergeData merge = lastMergeData
-                    [mergeIndex];
-
-                // get all merging transforms and select lastInteracted object for animation target
-                List<BaseGridItem> mergedItems = new List<BaseGridItem>();
-
-                float maxLastInteractedTime = 0;
-                int lastInteractedIndex = -1;
-
-                for (int i = 0; i < merge.mergingCoordinates.Count; i++)
-                {
-                    mergedItems.Add(gridItems[merge.mergingCoordinates[i]]);
-
-                    if (gridItems[merge.mergingCoordinates[i]].LastInteractedTime >= maxLastInteractedTime)
-                    {
-                        maxLastInteractedTime = gridItems[merge.mergingCoordinates[i]].LastInteractedTime;
-                        lastInteractedIndex = i;
-                    }
-                }
-
-                Vector3Int targetCoordinate = merge.mergingCoordinates[lastInteractedIndex];
-
-                // play animation if any sequence return add waiting list
-                var sequence = MatchGameService.AnimationController.PlayMergeAnimation(mergedItems);
-
-                BaseGridItem mergeResultItem = null;
-
-                if (merge.resultItem != null)
-                {
-                    if (boosterController.CheckAndCreateBooster(merge, targetCoordinate, out mergeResultItem))
-                    {
-                        
-                    }
-                    else
-                    {
-                        mergeResultItem = CreateGridItem(merge.resultItem, targetCoordinate);
-                    }
-                }
-
-                foreach (var coord in merge.mergingCoordinates)
-                {
-                    obstacleController.DamageAllNeighbourObstacles(coord, damageId); // find and call take damage function of all obstacles
-
-                    RemoveGridItem(coord);
-                }
-
-                if (mergeResultItem)
-                {
-                    SetUpGridItem(mergeResultItem);
-                }
-
-                if (sequence != null)
-                { 
-                    mergeSequences.Add(sequence.Play().ToUniTask());
-                }
-            }
-
-            return mergeSequences;
-        }
-
-        private bool HasAnythingToMerge()
-        {
-            lastMergeData = MatchGameService.MergeCalculator.CalculateMergeableItems();
-            return lastMergeData.Count > 0;
-        }        
-
         private bool IsDiagonalDropEnabled()
         {
             return MatchGameService.MatchGameSettings.canDropDiagonal;
@@ -576,22 +408,12 @@ namespace Match.Grid
 
         public void DamageGridItem(Vector3Int coord, string damageId, bool playParticle = true)
         {
-            if (GridItems.TryGetValue(coord, out BaseGridItem item) && item.MatchItemConfig.canDamageByBoosters)
+            if (GridItems.TryGetValue(coord, out BaseGridItem item))
             {
-                if (item is BoosterItem)
-                {
-                    ((BoosterItem)item).ActivateBooster();
-                }
-                else if (ObstacleController.CheckAndDamageObstacle(item, damageId))
-                {
-                }
-                else
-                {
-                    MatchGameService.AnimationController.PlayCollectAnimation(GridItems[coord]);
-                    RemoveGridItem(coord, playParticle);
-                }
+                //MatchGameService.AnimationController.PlayCollectAnimation(GridItems[coord]);
+                RemoveGridItem(coord, playParticle);
             }
-            
+
         }
 
         public void RemoveGridItem(Vector3Int coord, bool playParticle = true)
@@ -604,10 +426,10 @@ namespace Match.Grid
                 if (item is MatchItem && playParticle)
                 {
                     // play remove particle
-                    PoolableParticle particle = PoolService.Instance.Spawn(gridItemRemoveParticle);
+                    var particle = PoolService.Instance.Spawn(gridItemRemoveParticle);
                     particle.transform.position = item.transform.position;
 
-                    PoolService.Instance.Despawn(gridItemRemoveParticle, particle.ParticleSystem.main.duration);
+                    PoolService.Instance.Despawn(gridItemRemoveParticle, particle.main.duration);
                 }
             }
         }

@@ -12,7 +12,6 @@ namespace Match.Settings
         public BaseGridItem prefab;
         public Sprite icon;
         public bool canMerge;
-        public bool canDamageByBoosters = true;
 
         private string[] GetMatchItemNames()
         {

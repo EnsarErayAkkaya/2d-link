@@ -14,37 +14,16 @@ namespace Match
 
         public static string[] GetAllMatchItemNames()
         {
-            string[] result = new string[BaseMatchItemNames.Length + ObstacleItemNames.Length + BoosterItemNames.Length + CollectableItemNames.Length + 1];
+            string[] result = new string[BaseMatchItemNames.Length + 1];
 
-            int count = 0;
+            result[0] = randomItemKey;
+
+            int count = 1;
 
             for (int i = 0; i < BaseMatchItemNames.Length; i++)
             {
-                result[i] = BaseMatchItemNames[i];
+                result[count + i] = BaseMatchItemNames[i];
             }
-
-            count += BaseMatchItemNames.Length;
-
-            for (int i = 0; i < ObstacleItemNames.Length; i++)
-            {
-                result[count + i] = ObstacleItemNames[i];
-            }
-
-            count += ObstacleItemNames.Length;
-
-            for (int i = 0; i < BoosterItemNames.Length; i++)
-            {
-                result[count + i] = BoosterItemNames[i];
-            }
-
-            count += BoosterItemNames.Length;
-
-            for (int i = 0; i < CollectableItemNames.Length; i++)
-            {
-                result[count + i] = CollectableItemNames[i];
-            }
-
-            result[result.Length - 1] = randomItemKey;
 
             return result;
         }
@@ -56,27 +35,7 @@ namespace Match
             "red",
             "green",
             "blue",
-            "pink",
             "yellow"
-        };
-
-        public static readonly string[] ObstacleItemNames =
-        {
-            "obstacle_1",
-            "obstacle_2",
-        };
-        
-        public static readonly string[] BoosterItemNames =
-        {
-            "rocket",
-            "tnt",
-            "flying",
-            "rainbow",
-        };
-
-        public static readonly string[] CollectableItemNames =
-        {
-            "collect_item_1"
         };
     }
 }

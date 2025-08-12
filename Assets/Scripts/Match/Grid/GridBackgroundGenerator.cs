@@ -16,7 +16,7 @@ namespace Match.Grid
 
         private void GenerateBackground()
         {
-            MatchLevelData levelData = (MatchLevelData)ResolveServices.LevelService.ActiveLevelConfig.GetLevelData();
+            MatchLevelData levelData = null;//(MatchLevelData)ResolveServices.LevelService.ActiveLevelConfig.GetLevelData();
 
             for (int j = 0; j < levelData.levelGridSetup.Count; j++) // row
             {

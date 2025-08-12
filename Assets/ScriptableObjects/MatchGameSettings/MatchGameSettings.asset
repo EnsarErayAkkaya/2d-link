@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 130b1d204d2fcdf44887f08300faaae1, type: 3}
+  m_Name: MatchGameSettings
+  m_EditorClassIdentifier: 
+  baseMatchItemSetId: default
+  baseMatchItemSets:
+  - {fileID: 11400000, guid: 7def85f1c64a73f408d28fcdcaa5629e, type: 2}
+  borderLinePrefab: {fileID: 2148348114809689493, guid: 5d924d306cf01f040a6c88a2102b5719, type: 3}
+  cellBackgroundPrefab: {fileID: 6502604119405147826, guid: 19c5fd8ea35784449a3f3e61227c441d, type: 3}
+  canDropDiagonal: 0
