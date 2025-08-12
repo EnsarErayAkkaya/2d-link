@@ -27,6 +27,9 @@ namespace Match.Grid
 
         private MatchLevelData levelData;
 
+        private BaseGridItem selectedItem = null;
+        private List<BaseGridItem> forceAppliedItems = new();
+
         #region PUBLIC_GETTERS
         public Dictionary<Vector3Int, BaseGridItem> GridItems => gridItems;
         public Dictionary<Vector3Int, bool> GridShape => gridShape;
@@ -46,55 +49,20 @@ namespace Match.Grid
 
             RequestGridCalculation();
 
-            MatchGameService.MoveController.OnSwipeDetected += OnSwipeDetected;
+            MatchGameService.MoveController.OnLinkCompleted += OnLinkCompleted;
         }
 
-        private void OnSwipeDetected(Vector3 touchStartPos, Vector3Int direction)
+        private void OnLinkCompleted(Stack<Vector3Int> link)
         {
-            Vector3Int startCoordinate = grid.WorldToCell(touchStartPos);
-            startCoordinate.z = 0;
-            Vector3Int swipeCoordinate = startCoordinate + direction;
+            ClearSelected();
+            ClearForceFocus();
 
-            // if grid item exist and swipe direction item exist
-            if (gridItems.ContainsKey(startCoordinate) && gridItems.ContainsKey(swipeCoordinate) &&
-                gridItems[startCoordinate].MatchItemData.canMove && gridItems[swipeCoordinate].MatchItemData.canMove)
+            foreach (var coord in link)
             {
-                if (true)// valid link
-                {
-                    // this is a valid swipe, play successful move animation
-
-                    // set last Interacted times
-                    gridItems[startCoordinate].LastInteractedTime = Time.time;
-                    gridItems[startCoordinate].LastUserInputDirection = -direction;
-
-                    gridItems[swipeCoordinate].LastInteractedTime = Time.time;
-                    gridItems[swipeCoordinate].LastUserInputDirection = direction;
-
-                    SwapItems(startCoordinate, swipeCoordinate);
-                    /*MatchGameService.AnimationController
-                        .PlaySuccessfulMoveAnimaton(gridItems[startCoordinate].transform, gridItems[swipeCoordinate].transform).AppendCallback(() =>
-                        {
-                            gridItems[startCoordinate].OnUpdatePositionAnimationCompleted();
-                            gridItems[swipeCoordinate].OnUpdatePositionAnimationCompleted();
-
-                            RequestGridCalculation();
-                        });*/
-                }
-                else // failed link
-                {
-                    // not a valid swipe, play failed move animation
-                    /*MatchGameService.AnimationController
-                        .PlayFailedMoveAnimaton(gridItems[startCoordinate].transform, gridItems[swipeCoordinate].transform).OnComplete(() =>
-                        {
-                            MatchGameService.MoveController.SetCanInteract(true);
-                        })
-                        .Play();*/
-                }
+                RemoveGridItem(coord);
             }
-            else
-            {
-                MatchGameService.MoveController.SetCanInteract(true);
-            }
+
+            RequestGridCalculation();
         }
 
         public void SwapItems(Vector3Int startCoordinate, Vector3Int swipeCoordinate)
@@ -115,7 +83,7 @@ namespace Match.Grid
             {
                 for (int i = 0; i < levelData.levelStartingItems[j].row.Count; i++) // column
                 {
-                    Vector3Int coordinate = new Vector3Int(i, j);
+                    Vector3Int coordinate = new Vector3Int(i, j, 0);
 
                     if (levelData.levelGridSetup[j].row[i])
                     {
@@ -171,6 +139,8 @@ namespace Match.Grid
                     }
                 }
             }
+
+            MatchGameService.MoveController.SetCanInteract(true);
         }
 
         private List<UniTask> DropItemsVertically(out Dictionary<int, ColumnDropData> columnsDropData)
@@ -419,7 +389,7 @@ namespace Match.Grid
                 PoolService.Instance.Despawn(item);
                 gridItems.Remove(coord);
 
-                if (item is MatchItem && playParticle)
+                if (item is MatchItem && playParticle && gridItemRemoveParticle != null)
                 {
                     // play remove particle
                     var particle = PoolService.Instance.Spawn(gridItemRemoveParticle);
@@ -464,6 +434,67 @@ namespace Match.Grid
                 gridItem = null;
                 return false;
             }
+        }
+
+        public void ApplySelected(Vector3Int selectCoord)
+        {
+            if (selectedItem == null || selectedItem.GridCoordinate != selectCoord)
+            {
+                ClearSelected();
+
+                if (TryGetGridItem(selectCoord, out BaseGridItem selectItem))
+                {
+                    selectedItem = selectItem;
+
+                    selectItem.ApplySelected();
+                    SelectForceFocus(selectCoord);
+                }
+            }
+        }
+
+        public void ClearSelected()
+        {
+            if (selectedItem != null)
+            {
+                selectedItem.ClearSelected();
+                selectedItem = null;
+            }
+        }
+
+        public void SelectForceFocus(Vector3Int focusCoord)
+        {
+            ClearForceFocus();
+
+            if (TryGetGridItem(focusCoord, out BaseGridItem focusItem))
+            {
+                foreach (var adjecentCoord in MatchConstants.CellNeighbours)
+                {
+                    if (TryGetGridItem(focusCoord + adjecentCoord, out BaseGridItem neighbourItem))
+                    {
+                        neighbourItem.ApplyForce(adjecentCoord);
+                        forceAppliedItems.Add(neighbourItem);
+                    }
+                }
+
+                foreach (var diagonalCoord in MatchConstants.CellDiagonalNeighbours)
+                {
+                    if (TryGetGridItem(focusCoord + diagonalCoord, out BaseGridItem neighbourItem))
+                    {
+                        neighbourItem.ApplyForce(diagonalCoord);
+                        forceAppliedItems.Add(neighbourItem);
+                    }
+                }
+            }
+        }
+
+        public void ClearForceFocus()
+        {
+            foreach (var item in forceAppliedItems)
+            {
+                item.ClearForce();
+            }
+
+            forceAppliedItems.Clear();
         }
     }
 }

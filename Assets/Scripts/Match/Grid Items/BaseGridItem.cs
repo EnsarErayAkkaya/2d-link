@@ -7,9 +7,15 @@ namespace Match.GridItems
 {
     public abstract class BaseGridItem : MonoBehaviour, IPoolable
     {
+        [SerializeField] private SpriteRenderer spriteRenderer;
+
         private Vector3Int oldGridCoordinate;
         private Vector3Int gridCoordinate;
 
+        private string SelectedAnimId => $"selected_base_grid_item_{this.GetHashCode()}";
+        private string ForceAnimId => $"force_base_grid_item_{this.GetHashCode()}";
+
+        public SpriteRenderer SpriteRenderer => spriteRenderer;
         public Vector3Int LastUserInputDirection { get; set; }
         public float LastInteractedTime { get; set; }
 
@@ -64,10 +70,49 @@ namespace Match.GridItems
 
         public virtual void OnSpawn()
         {
+            spriteRenderer.transform.localScale = Vector3.one;
+            spriteRenderer.transform.localPosition = Vector3.zero;
         }
 
         public virtual void OnDespawn()
         {
+
+        }
+
+        public void ApplySelected()
+        {
+            DOTween.Kill(SelectedAnimId);
+
+            spriteRenderer.transform.DOScale(1.2f, 0.35f)
+                .SetEase(Ease.InOutSine)
+                .SetId(SelectedAnimId);
+        }
+
+        public void ClearSelected()
+        {
+            DOTween.Kill(SelectedAnimId);
+
+            spriteRenderer.transform.DOScale(1, 0.35f)
+                .SetEase(Ease.InOutSine)
+                .SetId(SelectedAnimId);
+        }
+
+        public void ApplyForce(Vector3 direction)
+        {
+            DOTween.Kill(ForceAnimId);
+
+            spriteRenderer.transform.DOLocalMove(direction * 0.05f, 0.3f)
+                .SetEase(Ease.OutBack)
+                .SetId(ForceAnimId);
+        }
+
+        public void ClearForce()
+        {
+            DOTween.Kill(ForceAnimId);
+
+            spriteRenderer.transform.DOLocalMove(Vector3.zero, 0.3f)
+                .SetEase(Ease.InOutSine)
+                .SetId(ForceAnimId);
         }
     }
 }

@@ -1,13 +1,10 @@
-using Codice.Client.Common.GameUI;
-using BaseServices;
 using BaseServices.InputServices;
+using Match.GridItems;
 using Match.Settings;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Text;
 using System.Linq;
+using UnityEngine;
 
 namespace Match
 {
@@ -15,10 +12,12 @@ namespace Match
     {
         private int moveMade = 0;
         private bool canInteract = false;
-        private Stack<Vector3Int> linkStack = new();
-        private BaseMatchItemConfig linkConfig;
+        private bool isLinking = false;
 
-        public Action<Vector3, Vector3Int> OnSwipeDetected;
+        private Stack<Vector3Int> linkStack = new();
+        private BaseMatchItemConfig linkConfig = null;
+
+        public Action<Stack<Vector3Int>> OnLinkCompleted;
 
         public void Init()
         {
@@ -35,7 +34,13 @@ namespace Match
             // all moves used
             if (moveCount < moveMade) return;
 
-            if (inputType == InputType.Drag)
+            if (inputType == InputType.Down)
+            {
+                linkStack.Clear();
+                linkConfig = null;
+                isLinking = true;
+            }
+            else if (inputType == InputType.Drag && isLinking)
             {
                 var cam = Camera.main;
 
@@ -44,6 +49,7 @@ namespace Match
                 {
                     Vector3 startPos = cam.ScreenToWorldPoint(new Vector3(args[0].x, args[0].y, cam.nearClipPlane));
                     Vector3Int coordinate = MatchGameService.GridController.Grid.WorldToCell(startPos);
+                    coordinate.z = 0;
 
                     if (MatchGameService.GridController.TryGetGridItem(coordinate, out var item))
                     {
@@ -55,6 +61,7 @@ namespace Match
                 // get the last coordinate
                 Vector3 currentFingerPos = cam.ScreenToWorldPoint(new Vector3(args[1].x, args[1].y, cam.nearClipPlane));
                 Vector3Int currentCoordinate = MatchGameService.GridController.Grid.WorldToCell(currentFingerPos);
+                currentCoordinate.z = 0;
 
                 if (linkStack.Count > 0)
                 {
@@ -76,7 +83,7 @@ namespace Match
                             }
                             Debug.Log($"Link Stack: {s}");
                         }
-                        else if (CanCoordinateBeAdded(currentCoordinate))
+                        else if (CanCoordinateBeAdded(currentCoordinate, out BaseGridItem gridItem))
                         {
                             // if the current coordinate is not in the stack, push it
                             linkStack.Push(currentCoordinate);
@@ -97,20 +104,41 @@ namespace Match
                     linkStack.Push(currentCoordinate);
                 }
 
-                //OnSwipeDetected?.Invoke(startPos, swipeDir);
+                if (linkStack.Count > 0)
+                    MatchGameService.GridController.ApplySelected(linkStack.Peek());
+
+            }
+            else if (inputType == InputType.Up)
+            {
+                isLinking = false;
+
+                //apply link if exist
+                if (linkStack.Count > 2)
+                {
+                    Stack<Vector3Int> linkStackCopy = new(linkStack);
+                    OnLinkCompleted?.Invoke(linkStackCopy);
+
+                    linkStack.Clear();
+                }
+                else
+                {
+                    linkStack.Clear();
+
+                    MatchGameService.GridController.ClearSelected();
+                    MatchGameService.GridController.ClearForceFocus();
+                }
             }
         }
 
-        private bool CanCoordinateBeAdded(Vector3Int coordinate)
+        private bool CanCoordinateBeAdded(Vector3Int coordinate, out BaseGridItem gridItem)
         {
             // check if the coordinate is a neighbour of the last coordinate
             Vector3Int lastCoordinate = linkStack.Peek();
 
-            if (MatchGameService.GridController.TryGetGridItem(coordinate, out var gridItem) == false || gridItem.MatchItemConfig != linkConfig)
+            if (MatchGameService.GridController.TryGetGridItem(coordinate, out gridItem) == false || gridItem.MatchItemConfig != linkConfig)
             {
                 return false;
             }
-
 
             Vector3Int diff = lastCoordinate - coordinate;
 
@@ -119,7 +147,6 @@ namespace Match
             {
                 return false;
             }
-
 
             return true;
         }

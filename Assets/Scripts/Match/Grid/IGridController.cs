@@ -29,5 +29,12 @@ namespace Match.Grid
         bool IsBottom(Vector3Int coord);
 
         bool TryGetGridItem(Vector3Int coord, out BaseGridItem gridItem);
+
+        void ApplySelected(Vector3Int selectCoord);
+        void ClearSelected();
+
+        void SelectForceFocus(Vector3Int focusCoord);
+
+        void ClearForceFocus();
     }
 }
