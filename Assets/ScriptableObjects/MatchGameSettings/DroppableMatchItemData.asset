@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: DroppableMatchItemData
   m_EditorClassIdentifier: 
   canMove: 1
-  dropDuration: 0.3
-  dropDelay: 0.1
+  dropDuration: 0.2
+  dropDelay: 0.08
   dropEase: 4
-  reachedWiggleMovementMultpilier: 0.2
+  reachedWiggleMovementMultpilier: 0.06
   reachedWiggleDurations:
-  - 0.06
-  - 0.07
   - 0.04
-  reachedWiggleEase: 020000000200000002000000
+  - 0.04
+  reachedWiggleEase: 0200000002000000

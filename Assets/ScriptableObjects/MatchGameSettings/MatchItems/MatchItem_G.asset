@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MatchItem_G
   m_EditorClassIdentifier: 
   Id: green
-  prefab: {fileID: 7712904141527634994, guid: 9409acfb2c46ad2459fbd454c9b4e999, type: 3}
+  prefab: {fileID: 9058264164337488637, guid: 9409acfb2c46ad2459fbd454c9b4e999, type: 3}
   icon: {fileID: 21300000, guid: 2364a0c733649554e8443f94d8fbb195, type: 3}
   canMerge: 1

@@ -17,6 +17,7 @@ namespace Match
         private Stack<Vector3Int> linkStack = new();
         private BaseMatchItemConfig linkConfig = null;
 
+        public Action<Stack<Vector3Int>> OnLinkUpdated;
         public Action<Stack<Vector3Int>> OnLinkCompleted;
 
         public void Init()
@@ -55,6 +56,8 @@ namespace Match
                     {
                         linkConfig = item.MatchItemConfig; // sets link config
                         linkStack.Push(coordinate);
+
+                        OnLinkUpdated?.Invoke(linkStack);
                     }
                 }
 
@@ -76,24 +79,14 @@ namespace Match
                                 linkStack.Pop();
                             }
 
-                            string s = "";
-                            foreach (var item in linkStack)
-                            {
-                                s += item.ToString() + " ";
-                            }
-                            Debug.Log($"Link Stack: {s}");
+                            OnLinkUpdated?.Invoke(linkStack);
                         }
                         else if (CanCoordinateBeAdded(currentCoordinate, out BaseGridItem gridItem))
                         {
                             // if the current coordinate is not in the stack, push it
                             linkStack.Push(currentCoordinate);
 
-                            string s = "";
-                            foreach (var item in linkStack)
-                            {
-                                s += item.ToString() + " ";
-                            }
-                            Debug.Log($"Link Stack: {s}");
+                            OnLinkUpdated?.Invoke(linkStack);
                         }
 
                     }
@@ -102,6 +95,8 @@ namespace Match
                 {
                     linkConfig = item.MatchItemConfig; // sets link config
                     linkStack.Push(currentCoordinate);
+
+                    OnLinkUpdated?.Invoke(linkStack);
                 }
 
                 if (linkStack.Count > 0)
@@ -127,6 +122,8 @@ namespace Match
                     MatchGameService.GridController.ClearSelected();
                     MatchGameService.GridController.ClearForceFocus();
                 }
+
+                OnLinkUpdated?.Invoke(linkStack);
             }
         }
 
@@ -142,8 +139,8 @@ namespace Match
 
             Vector3Int diff = lastCoordinate - coordinate;
 
-            // not a adjecent neighbour or diagonal neighbour
-            if (MatchConstants.CellNeighbours.Contains(diff) == false && MatchConstants.CellDiagonalNeighbours.Contains(diff) == false)
+            // not a adjecent neighbour
+            if (MatchConstants.CellNeighbours.Contains(diff) == false)
             {
                 return false;
             }
