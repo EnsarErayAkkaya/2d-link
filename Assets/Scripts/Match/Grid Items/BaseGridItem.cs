@@ -9,7 +9,6 @@ namespace Match.GridItems
     {
         [SerializeField] private SpriteRenderer spriteRenderer;
 
-        private Vector3Int oldGridCoordinate;
         private Vector3Int gridCoordinate;
 
         private string SelectedAnimId => $"selected_base_grid_item_{this.GetHashCode()}";
@@ -30,7 +29,6 @@ namespace Match.GridItems
 
         public virtual void UpdateGridCoordinate(Vector3Int newCoordinate)
         {
-            oldGridCoordinate = gridCoordinate;
             gridCoordinate = newCoordinate;            
         }
 

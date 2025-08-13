@@ -60,6 +60,7 @@ namespace Match.Grid
             {
                 PoolService.Instance.Despawn(item);
             }
+            backgroundSprites.Clear();
         }
     }
 

@@ -6,10 +6,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI.Screens
+namespace Match.UI
 {
-    public class GameEndScreen : MonoBehaviour
+    public class GameEndScreen : BaseScreen
     {
+        [Header("Game End Screen")]
         [SerializeField] private TextMeshProUGUI resultText;
         [SerializeField] private Button retryButton;
         [SerializeField] private TextMeshProUGUI retryButtonText;
@@ -30,10 +31,10 @@ namespace UI.Screens
             }
         }
 
-        public void OnRetryButtonClicked()
+        public async void OnRetryButtonClicked()
         {
-            SceneService.Instance.LoadGameScene().AsUniTask();
-            SceneService.Instance.RemoveScene(SceneService.Instance.Settings.gameSceneConfig).AsUniTask();
+            await SceneService.Instance.RemoveScene(SceneService.Instance.Settings.gameSceneConfig).AsUniTask();
+            await SceneService.Instance.LoadGameScene().AsUniTask();
         }
     }
 }

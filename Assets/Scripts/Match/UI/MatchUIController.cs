@@ -1,9 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace Match.UI
 {
@@ -11,6 +8,7 @@ namespace Match.UI
     {
         [SerializeField] private TextMeshProUGUI moveCountText;
         [SerializeField] private TextMeshProUGUI scoreText;
+        [SerializeField] private GameEndScreen gameEndScreen;
 
         private ScoreController scoreController;
 
@@ -23,11 +21,18 @@ namespace Match.UI
             MatchGameService.MoveController.OnLinkCompleted += OnLinkCompleted;
 
             scoreText.text = $"0/{MatchGameService.MatchLevelData.targetScore}";
+            moveCountText.text = (MatchGameService.MatchLevelData.moveCount - MatchGameService.MoveController.MoveMade).ToString();
         }
 
         private void OnLinkCompleted(Stack<Vector3Int> stack)
         {
             moveCountText.text = (MatchGameService.MatchLevelData.moveCount - MatchGameService.MoveController.MoveMade).ToString();
+
+            if (MatchGameService.MoveController.MoveMade >= MatchGameService.MatchLevelData.moveCount)
+            {
+                gameEndScreen.Setup(scoreController.Score >= MatchGameService.MatchLevelData.targetScore);
+                gameEndScreen.Show();
+            }
         }
 
         private void UpdateScore(int score)

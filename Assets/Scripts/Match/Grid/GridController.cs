@@ -1,4 +1,5 @@
 ﻿using BaseServices.PoolServices;
+using BaseServices.Utilities;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Match.GridItems;
@@ -157,7 +158,65 @@ namespace Match.Grid
                 }
             }
 
+            if (IsTheerePossibleMove() == false)
+            {
+                Debug.Log("No possible moves left, shuffling grid...");
+
+                await UniTask.Delay(300);
+
+                ShuffleGrid();
+
+                await UniTask.Delay(600);
+
+                CalculateGrid();
+            }
+
             MatchGameService.MoveController.SetCanInteract(true);
+        }
+
+        public void ShuffleGrid()
+        {
+            List<Vector3Int> shuffledCoords = new List<Vector3Int>(gridItems.Keys);
+            List<BaseGridItem> shuffledItems = new List<BaseGridItem>(gridItems.Values);
+            shuffledItems.Shuffle();
+
+            gridItems.Clear();
+
+            for (int i = 0; i < shuffledCoords.Count; i++)
+            {
+                shuffledItems[i].UpdateGridCoordinate(shuffledCoords[i]);
+
+                shuffledItems[i].transform.DOLocalMove(grid.GetCellCenterLocal(shuffledItems[i].GridCoordinate), 0.6f);
+
+                gridItems.Add(shuffledItems[i].GridCoordinate, shuffledItems[i]);
+            }
+        }
+
+        public bool IsTheerePossibleMove()
+        {
+            // Check if there is any possible move left
+            foreach (var item in gridItems)
+            {
+                int validNeighbours = 0;
+
+                foreach (var neighbourCoord in MatchConstants.CellNeighbours)
+                {
+                    if (TryGetGridItem(item.Key + neighbourCoord, out var neighbour))
+                    {
+                        if (item.Value.MatchItemConfig == neighbour.MatchItemConfig)
+                        {
+                            validNeighbours++;
+                        }
+                    }
+                }
+
+                if (validNeighbours >= 2)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<UniTask> DropItemsVertically(out Dictionary<int, ColumnDropData> columnsDropData)
@@ -512,6 +571,16 @@ namespace Match.Grid
             }
 
             forceAppliedItems.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var item in gridItems)
+            {
+                PoolService.Instance.Despawn(item.Value.gameObject);
+            }
+
+            gridItems.Clear();
         }
     }
 }
