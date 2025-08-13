@@ -10,7 +10,7 @@ namespace Match
         {
             MatchLevelData levelData = MatchGameService.MatchLevelData;
 
-            Camera.main.orthographicSize = levelData.size.x * MatchGameService.GridController.CellSize.x * 1.1f;
+            Camera.main.orthographicSize = levelData.size.x * MatchGameService.GridController.CellSize.x * 1.15f;
         }
     }
 }
