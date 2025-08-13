@@ -19,8 +19,12 @@ namespace BaseServices.SceneServices
 
         public Action<SceneConfig> OnSceneTransitionCompleted { get; set; }
 
+        public static SceneService Instance { get; private set; }
+
         private void Start()
         {
+            Instance = this;
+
             Initialize();
         }
 

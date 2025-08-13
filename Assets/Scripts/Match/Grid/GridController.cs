@@ -3,11 +3,8 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Match.GridItems;
 using Match.Settings;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using BaseServices.Utilities;
 
 namespace Match.Grid
 {
@@ -79,24 +76,44 @@ namespace Match.Grid
 
         public void GenerateGrid()
         {
-            for (int j = 0; j < levelData.levelStartingItems.Count; j++) // row
+            for (int j = 0; j < levelData.size.x; j++) // row
             {
-                for (int i = 0; i < levelData.levelStartingItems[j].row.Count; i++) // column
+                for (int i = 0; i < levelData.size.y; i++) // column
                 {
                     Vector3Int coordinate = new Vector3Int(i, j, 0);
 
-                    if (levelData.levelGridSetup[j].row[i])
+                    if (levelData.levelGridShape.Count > j && levelData.levelGridShape[j].row.Count > i)
                     {
-                        string itemKey = levelData.levelStartingItems[j].row[i].item;
-                        BaseMatchItemConfig config = MatchGameService.Instance.GetMatchItemConfig(itemKey);
+                        if (levelData.levelGridShape[j].row[i])
+                        {
+                            gridShape.Add(coordinate, true);
 
-                        SetUpGridItem(CreateGridItem(config, coordinate));
+                            if (levelData.levelStartingItems.Count > j && levelData.levelStartingItems[j].row.Count > i)
+                            {
+                                string itemKey = levelData.levelStartingItems[j].row[i].item;
+                                BaseMatchItemConfig config = MatchGameService.Instance.GetMatchItemConfig(itemKey);
 
-                        gridShape.Add(coordinate, true);
+                                SetUpGridItem(CreateGridItem(config, coordinate));
+                            }
+                            else
+                            {
+                                BaseMatchItemConfig randomConfig = MatchGameService.Instance.GetMatchItemConfig(MatchConstants.randomItemKey);
+
+                                SetUpGridItem(CreateGridItem(randomConfig, coordinate));
+                            }
+                        }
+                        else
+                        {
+                            gridShape.Add(coordinate, false);
+                        }
                     }
                     else
                     {
-                        gridShape.Add(coordinate, false);
+                        gridShape.Add(coordinate, true);
+
+                        BaseMatchItemConfig randomConfig = MatchGameService.Instance.GetMatchItemConfig(MatchConstants.randomItemKey);
+
+                        SetUpGridItem(CreateGridItem(randomConfig, coordinate));
                     }
                 }
             }

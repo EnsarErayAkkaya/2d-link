@@ -12,7 +12,8 @@ namespace Match.Settings
         public Vector2Int size;
         public int moveCount;
         public List<ListWrapper<MatchItemType>> levelStartingItems;
-        public List<ListWrapper<bool>> levelGridSetup;
+        public List<ListWrapper<bool>> levelGridShape;
+        public int targetScore;
     }
 
     [System.Serializable]

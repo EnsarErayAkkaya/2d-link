@@ -10,7 +10,6 @@ namespace Match
 {
     public class MoveController
     {
-        private int moveMade = 0;
         private bool canInteract = false;
         private bool isLinking = false;
 
@@ -19,6 +18,8 @@ namespace Match
 
         public Action<Stack<Vector3Int>> OnLinkUpdated;
         public Action<Stack<Vector3Int>> OnLinkCompleted;
+
+        public int MoveMade { get; private set; }
 
         public void Init()
         {
@@ -33,7 +34,7 @@ namespace Match
             int moveCount = MatchGameService.MatchLevelData.moveCount;
 
             // all moves used
-            if (moveCount < moveMade) return;
+            if (MoveMade >= moveCount) return;
 
             if (inputType == InputType.Down)
             {
@@ -110,6 +111,8 @@ namespace Match
                 //apply link if exist
                 if (linkStack.Count > 2)
                 {
+                    MoveMade++;
+
                     Stack<Vector3Int> linkStackCopy = new(linkStack);
                     OnLinkCompleted?.Invoke(linkStackCopy);
 
