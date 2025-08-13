@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 namespace Match
 {
@@ -19,6 +18,11 @@ namespace Match
             new Vector3Int(-1, 1)
         };
 
+        /// <summary>
+        /// This method returns all match item names including the random item key.
+        /// Inspite of an enum this allows a safer way to add new match items without breaking existing levels.
+        /// </summary>
+        /// <returns></returns>
         public static string[] GetAllMatchItemNames()
         {
             string[] result = new string[BaseMatchItemNames.Length + 1];

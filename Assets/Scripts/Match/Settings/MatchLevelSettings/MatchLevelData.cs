@@ -10,9 +10,15 @@ namespace Match.Settings
     {
         public string Id;
         public Vector2Int size;
-        public int moveCount;
+
+        [InfoBox("Level starting items are used to fill the grid at the start of the level. default is random")]
         public List<ListWrapper<MatchItemType>> levelStartingItems;
+
+        [InfoBox("Grid shape controls shape of the grid. Default shape is a filled rectangle according to size. You can create empty cells with setting shape false")]
         public List<ListWrapper<bool>> levelGridShape;
+
+        [Header("Level Targets")]
+        public int moveCount;
         public int targetScore;
     }
 

@@ -39,8 +39,6 @@ namespace Match.Grid
 
         public void Init()
         {
-            //PoolService.Instance.InitializePool(gridItemRemoveParticle.gameObject, 15, 10);
-
             levelData = MatchGameService.MatchLevelData;
 
             GenerateGrid();

@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Match
 {
-    public class ScoreController : MonoBehaviour
+    public class ScoreController
     {
         public int Score { get; private set; }
 
         public Action<int> OnScoreUpdated;
 
-        private void Start()
+        public void Init()
         {
             MoveController moveController = MatchGameService.MoveController;
 

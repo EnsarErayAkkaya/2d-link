@@ -17,24 +17,21 @@ namespace Match
 
         #region SERVICES & CONTROLLERS
         private MoveController moveController = new MoveController();
+        private ScoreController scoreController = new ScoreController();
         #endregion
 
         private static MatchGameService instance;
-        private Dictionary<BaseMatchItemConfig, int> matchItemCollectedCounts = new();
 
         #region INTERNAL GETTERS
         internal static MatchLevelData MatchLevelData => instance.matchLevelData;
         internal static MatchGameSettings MatchGameSettings => instance.matchGameSettings;
         internal static MoveController MoveController => instance.moveController; 
+        internal static ScoreController ScoreController => instance.scoreController; 
         #endregion
 
         #region PUBLIC GETTERS
         public static IGridController GridController => instance.gridController;
         public static MatchGameService Instance => instance;
-
-        public Action<BaseMatchItemConfig, int> OnNewMatchItemCollected { get; set; }
-        public Dictionary<BaseMatchItemConfig, int> MatchItemCollectedCounts => matchItemCollectedCounts;
-
         #endregion
 
 
@@ -51,6 +48,7 @@ namespace Match
         public async void Setup()
         {
             moveController.Init();
+            scoreController.Init();
 
             await UniTask.DelayFrame(1);
 

@@ -11,12 +11,11 @@ namespace Match.Settings
     {
         [BoxGroup("Base Match Item Configs")]
         public string baseMatchItemSetId = "default";
+
         [BoxGroup("Base Match Item Configs")]
         public List<MatchItemSet> baseMatchItemSets;
 
-        [BoxGroup("Border and Background")]
-        public SpriteRenderer borderLinePrefab;
-        [BoxGroup("Border and Background")]
+        [BoxGroup("Background")]
         public SpriteRenderer cellBackgroundPrefab;
 
         [BoxGroup("Game Rules")]

@@ -10,13 +10,9 @@ namespace Match.UI
         [SerializeField] private TextMeshProUGUI scoreText;
         [SerializeField] private GameEndScreen gameEndScreen;
 
-        private ScoreController scoreController;
-
         private void Start()
         {
-            scoreController = FindObjectOfType<ScoreController>();
-
-            scoreController.OnScoreUpdated += UpdateScore;
+            MatchGameService.ScoreController.OnScoreUpdated += UpdateScore;
 
             MatchGameService.MoveController.OnLinkCompleted += OnLinkCompleted;
 
@@ -30,7 +26,7 @@ namespace Match.UI
 
             if (MatchGameService.MoveController.MoveMade >= MatchGameService.MatchLevelData.moveCount)
             {
-                gameEndScreen.Setup(scoreController.Score >= MatchGameService.MatchLevelData.targetScore);
+                gameEndScreen.Setup(MatchGameService.ScoreController.Score >= MatchGameService.MatchLevelData.targetScore);
                 gameEndScreen.Show();
             }
         }
