@@ -468,7 +468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 300710414}
-  gridItemRemoveParticle: {fileID: 0}
+  gridItemRemoveParticle: {fileID: 4522285013832878512, guid: 7cfdb8c5842dd13498694774462039c9, type: 3}
 --- !u!156049354 &300710414
 Grid:
   m_ObjectHideFlags: 0

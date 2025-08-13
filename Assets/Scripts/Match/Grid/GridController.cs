@@ -462,17 +462,20 @@ namespace Match.Grid
         {
             if (TryGetGridItem(coord, out BaseGridItem item))
             {
-                PoolService.Instance.Despawn(item);
-                gridItems.Remove(coord);
-
                 if (item is MatchItem && playParticle && gridItemRemoveParticle != null)
                 {
                     // play remove particle
                     var particle = PoolService.Instance.Spawn(gridItemRemoveParticle);
+
+                    particle.textureSheetAnimation.SetSprite(0, item.MatchItemConfig.icon);
+
                     particle.transform.position = item.transform.position;
 
-                    PoolService.Instance.Despawn(gridItemRemoveParticle, particle.main.duration);
+                    PoolService.Instance.Despawn(particle, particle.main.duration);
                 }
+
+                PoolService.Instance.Despawn(item);
+                gridItems.Remove(coord);
             }
         }
 
